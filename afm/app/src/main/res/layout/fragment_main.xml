@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentBottom="true"
+    android:background="@color/black"
+    android:orientation="vertical"
+    android:paddingTop="20dp"
+    tools:context=".ui.main.PlaceholderFragment">
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top">
+                <TextView
+                    android:id="@+id/section_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/linear_search"
+                    android:layout_marginLeft="50dp"
+                    android:layout_marginRight="50dp"
+                    android:textAlignment="center"
+                    android:textColor="@color/whitesh"
+                    android:textSize="15pt" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/linear_search"
+                android:layout_width="fill_parent"
+                android:layout_height="60dp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp"
+                android:background="@color/whitesh"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/search_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_gravity="left"
+                    android:layout_weight="1"
+                    android:background="@color/whitesh"
+                    android:hint="skriv t.ex. jobbtitel, ort, yrke">
+
+                </EditText>
+
+                <Button
+                    android:id="@+id/search_btn"
+                    style="@style/Widget.AppCompat.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_gravity="right"
+                    android:layout_weight="5"
+                    android:drawableBottom="@drawable/search">
+
+                </Button>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+
+                android:orientation="vertical"
+                android:paddingTop="0dp">
+
+                <Button
+                    android:id="@+id/search_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_marginLeft="50dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginRight="50dp"
+                    android:background="@color/black"
+                    android:text="> Visa alla lediga jobb"
+                    android:textColor="@color/whitesh">
+
+                </Button>
+
+                <ListView
+                    android:id="@+id/listview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                </ListView>
+
+
+            </LinearLayout>
+        </LinearLayout>
+
+</LinearLayout>

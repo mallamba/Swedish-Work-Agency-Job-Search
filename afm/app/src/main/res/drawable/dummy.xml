@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <layer-list android:opacity="transparent">
+            <item android:width="60dp" android:gravity="center_horizontal" android:start="0dp">
+                <bitmap  android:src="@drawable/sweden" android:gravity="center"/>
+            </item>
+        </layer-list>
+    </item>
+</selector>
