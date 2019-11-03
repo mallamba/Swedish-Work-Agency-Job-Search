@@ -32,10 +32,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        if(position == 0)
-            return pFrag;
-        else
-            return sFrag;
+        switch (position) {
+            case 0:
+                return pFrag;
+            case 1:
+                return sFrag;
+        }
+        return null;
     }
 
     @Nullable

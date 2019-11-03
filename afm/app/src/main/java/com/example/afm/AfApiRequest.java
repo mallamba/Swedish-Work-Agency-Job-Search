@@ -1,9 +1,10 @@
 /*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
-*/
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.example.afm;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
@@ -16,6 +17,7 @@ import android.util.Log;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,26 +33,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author Louay
  * AfApiRequest class to handle all API requests
  */
 public class AfApiRequest {
-    
     static OkHttpClient client;
     static Response response;
     static Request request;
     static String api_key = "bG91YXkua2hhbGlsQGxpdmUuc2U";
-    
-    /** Constructor OkHttpClient gets created **/
-    public AfApiRequest(){
+
+    /**
+     * Constructor OkHttpClient gets created
+     **/
+    public AfApiRequest() {
         client = new OkHttpClient();
     }
-    
-    
-    /** Returns a JSONObject from a given url **/
-    private static JSONObject extractJSON(String url) {
 
+
+    /**
+     * Returns a JSONObject from a given url
+     **/
+    private static JSONObject extractJSON(String url) {
         JSONObject jsonObject = null;
         request = new Request.Builder()
                 .url(url)
@@ -73,52 +76,52 @@ public class AfApiRequest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return jsonObject;
     }
-    
-    
-    /** Returns a JSONObject with county data from a given county name **/
+
+
+    /**
+     * Returns a JSONObject with county data from a given county name
+     **/
     public JSONObject findCounty(String countyName) throws Exception {
         String url = ("https://api.arbetsformedlingen.se/af/v0/arbetsformedling/soklista/lan");
-        
         JSONObject json = null;
         JSONArray jArray = null;
-        
         jArray = extractJSON(url).getJSONObject("soklista").getJSONArray("sokdata");
-        
-        if(!countyName.contains("län")){
+        if (!countyName.contains("län")) {
             countyName += " län";
         }
-        for(int i = 0; i < jArray.length(); i++){
+        for (int i = 0; i < jArray.length(); i++) {
             json = jArray.getJSONObject(i);
-            if(json.get("namn").toString().equalsIgnoreCase(countyName)){
-                
+            if (json.get("namn").toString().equalsIgnoreCase(countyName)) {
+
                 i = jArray.length();
-            }
-            else
+            } else
                 json = null;
         }
         return json;
     }
 
 
-
-    /** Returns a JSONObject with county data from a given county name **/
+    /**
+     * Returns a JSONObject with county data from a given county name
+     **/
     private static JSONArray findJobs(String search_word) throws Exception {
         client = new OkHttpClient();
-        String url = "https://jobsearch.api.jobtechdev.se/search?q=" + search_word + "&offset=0&limit=10";
+        String url = "https://jobsearch.api.jobtechdev.se/search?q=" + search_word + "&offset=0&limit=100";
         return extractJSON(url).getJSONArray("hits");
     }
 
 
-    public static List[] lists_3(String search_word){
-        Log.d("....................",search_word);
-        List[] lists = new List[3];
-        JSONArray j = sortRelevance( jsonArray(search_word) );
+    public static List[] lists_3(String search_word) {
+        List[] lists = new List[4];
+        //JSONArray j = sortRelevance(jsonArray(search_word));
+        JSONArray j = jsonArray(search_word);
         lists[0] = headList(j);
         lists[1] = secondList(j);
         lists[2] = logoList(j);
+        lists[3] = new ArrayList<JSONArray>();
+        lists[3].add(j);
         return lists;
     }
 
@@ -130,8 +133,9 @@ public class AfApiRequest {
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            thread.interrupt();
         }
-        Log.d("............... object",searchObject.toString());
+        thread.interrupt();
         return searchObject.getValue();
     }
 
@@ -141,14 +145,14 @@ public class AfApiRequest {
         JSONObject j1, j2, tempJ = new JSONObject();
         JSONArray newArray = new JSONArray();
         for (int i = 0; i < jA.length() - 1; i++) {
-            for (int x = 1; x < jA.length(); x++  ) {
+            for (int x = 1; x < jA.length(); x++) {
                 try {
                     j1 = jA.getJSONObject(i);
                     j2 = jA.getJSONObject(x);
                     rel1 = j1.getDouble("relevance");
                     rel2 = j2.getDouble("relevance");
                     tempJ = j1;
-                    if(rel2 > rel1)
+                    if (rel2 > rel1)
                         tempJ = j2;
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -156,7 +160,6 @@ public class AfApiRequest {
             }
             newArray.put(tempJ);
         }
-        Log.d(".......... sort ",newArray.toString());
         return newArray;
     }
 
@@ -186,7 +189,7 @@ public class AfApiRequest {
                 jO = j.getJSONObject(i);
                 municipality = jO.getJSONObject("workplace_address").getString("municipality");
                 region = "";
-                if ( municipality.equals("null") )
+                if (municipality.equals("null"))
                     municipality = jO.getJSONObject("workplace_address").getString("country");
                 else
                     region = jO.getJSONObject("workplace_address").getString("region");
@@ -201,82 +204,83 @@ public class AfApiRequest {
     }
 
     private static List<Drawable> logoList(JSONArray j) {
-        JSONObject jO;
-        String logo_url;
-        final ArrayList<Drawable> list0 = new ArrayList<Drawable>();
+        List<Drawable> list0;
         Thread thread;
-        for (int i = 0; i < j.length(); i++) {
-            try {
-                jO = j.getJSONObject(i);
-                logo_url = jO.getString("logo_url");
-                Draw draw = new Draw( logo_url );
-                thread = new Thread(draw);
-                thread.start();
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                list0.add( draw.getValue() );
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+
+/*
+        Draw draw = new Draw(j);
+        thread = new Thread(draw);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            thread.destroy();
         }
+        list0 = draw.getValue();
+        thread.interrupt();
+*/
+
+        list0 = new ArrayList<>();
         return list0;
     }
 
-    
-    /** Returns a JSONArray with offices data from a given county id  **/
+
+    /**
+     * Returns a JSONArray with offices data from a given county id
+     **/
     public JSONArray findOffices(int countyId) throws Exception {
         String url = ("https://api.arbetsformedlingen.se/af/v0/arbetsformedling/platser?lanid=" + countyId);
-        
+
         JSONObject json = null;
         JSONArray jArray = null;
         try {
             json = extractJSON(url).getJSONObject("arbetsformedlingslista");
             jArray = json.getJSONArray("arbetsformedlingplatsdata");
-        } catch(Exception e) {
+        } catch (Exception e) {
             json = null;
         }
         return jArray;
     }
-    
-    
-    /** Returns a JSONObject with office data from a given office id **/
+
+
+    /**
+     * Returns a JSONObject with office data from a given office id
+     **/
     public JSONObject findOffice(String officeId) throws Exception {
         String url = ("https://api.arbetsformedlingen.se/af/v0/arbetsformedling/" + officeId);
         JSONObject json = null;
-        
+
         try {
             json = extractJSON(url).getJSONObject("arbetsformedling");
-        } catch(Exception e) {
+        } catch (Exception e) {
             json = null;
         }
         return json;
     }
-    
-    
-    /** Returns a JSONArray with job ads data from a given county id **/
+
+
+    /**
+     * Returns a JSONArray with job ads data from a given county id
+     **/
     public JSONArray findJobAdverts(int countyId) throws Exception {
         String url = ("https://api.arbetsformedlingen.se/af/v0/platsannonser/soklista/kommuner?lanid=" + countyId);
-        
+
         JSONArray jArray = null;
         try {
             jArray = extractJSON(url).getJSONObject("soklista").getJSONArray("sokdata");
-        } catch(Exception e) {
-            
+        } catch (Exception e) {
+
         }
         return jArray;
     }
-
-
 
 
     public static class Search implements Runnable {
         private volatile JSONArray values;
         private String search_word = "";
 
-        public Search(String search_word){
+        public Search(String search_word) {
             this.search_word = search_word;
         }
 
@@ -295,36 +299,49 @@ public class AfApiRequest {
     }
 
 
-
     public static class Draw implements Runnable {
+        JSONObject jO;
+        String logo_url;
         private volatile Drawable drawable;
-        private String url;
+        private JSONArray j;
+        final ArrayList<Drawable> list0;
+        Bitmap x;
+        HttpURLConnection connection;
+        InputStream input;
 
-        public Draw(String url){
-            this.url = url;
+        public Draw(JSONArray j) {
+            this.j = j;
+            list0 = new ArrayList<>();
         }
 
         @Override
         public void run() {
             try {
-                Bitmap x;
+                for (int i = 0; i < j.length(); i++) {
+                    try {
+                        jO = j.getJSONObject(i);
+                        logo_url = jO.getString("logo_url");
+                        connection = (HttpURLConnection) new URL(logo_url).openConnection();
+                        connection.connect();
+                        input = connection.getInputStream();
+                        x = BitmapFactory.decodeStream(input);
+                        drawable = new BitmapDrawable(Resources.getSystem(), x);
+                        list0.add(drawable);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
 
-                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-                connection.connect();
-                InputStream input = connection.getInputStream();
-
-                x = BitmapFactory.decodeStream(input);
-                drawable = new BitmapDrawable(Resources.getSystem(), x);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        public Drawable getValue() {
-            return drawable;
+        public List<Drawable> getValue() {
+            return list0;
         }
     }
 
 
-
 }
+

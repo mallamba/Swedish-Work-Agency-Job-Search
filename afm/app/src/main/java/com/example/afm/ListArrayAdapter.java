@@ -55,7 +55,7 @@ public class ListArrayAdapter extends ArrayAdapter<String> {
 
         textView1.setText(objects.get(position));
         textView2.setText(objects2.get(position));
-        imageView.setImageDrawable( draws.get(position)  );
+       // imageView.setImageDrawable( draws.get(position)  );
         return rowView;
     }
 

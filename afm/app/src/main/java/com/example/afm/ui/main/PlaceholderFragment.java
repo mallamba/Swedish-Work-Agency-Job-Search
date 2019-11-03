@@ -1,12 +1,9 @@
 package com.example.afm.ui.main;
 
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.content.Context;
+
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,26 +12,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.example.afm.AfApiRequest;
+import com.example.afm.CustomToast;
 import com.example.afm.ListArrayAdapter;
+
+import com.example.afm.MainActivity;
 import com.example.afm.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,16 +43,16 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private PageViewModel pageViewModel;
-
-
-    private JSONArray job_json_array;
-
+    private ViewPager viewPager;
 
     private EditText search_field;
+    private TextView textView;
     private Button search_btn;
-    private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private ListView listview;
+    private Vibrator vibe;
+
+
+
 
     public static PlaceholderFragment newInstance(int index) {
         PlaceholderFragment fragment = new PlaceholderFragment();
@@ -77,15 +74,14 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
 
 
 
-
     }
 
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_main, container, false);
-        final TextView textView = root.findViewById(R.id.section_label);
+        final View root = inflater.inflate(R.layout.fragment_main, container, false);
+        textView = root.findViewById(R.id.section_label);
         pageViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -93,16 +89,21 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
             }
         });
 
-        search_field = (EditText) root.findViewById(R.id.search_text);
-        search_btn = (Button) root.findViewById(R.id.search_btn);
-        final ListView listview = (ListView) root.findViewById(R.id.listview);
+        viewPager = MainActivity.getViewPager();
 
 
+        vibe = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
+        search_field = root.findViewById(R.id.search_text);
+
+        listview = root.findViewById(R.id.listview);
+
+        search_btn = root.findViewById(R.id.search_btn);
         search_btn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                vibe.vibrate(450);
+                final List[] lists = AfApiRequest.lists_3( search_field.getText().toString() );
 
-                List[] lists = AfApiRequest.lists_3( search_field.getText().toString() );
                 final ListArrayAdapter adapter = new ListArrayAdapter(getContext(),
                         android.R.layout.simple_list_item_1, lists[2], lists[0], lists[1]);
                 listview.setAdapter(adapter);
@@ -111,15 +112,29 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
 
                     @Override
                     public void onItemClick(AdapterView<?> parent, final View view,
-                                            int position, long id) {
+                                            final int position, long id) {
                         final String item = (String) parent.getItemAtPosition(position);
-                        view.animate().setDuration(2000).alpha(0)
+                        view.animate().setDuration(250).alpha(0)
                                 .withEndAction(new Runnable() {
                                     @Override
                                     public void run() {
+                                        vibe.vibrate(250);
+                                        viewPager.setCurrentItem(1);
                                         //lists[0].remove(item);
                                         adapter.notifyDataSetChanged();
                                         view.setAlpha(1);
+
+
+                                        JSONArray arr = (JSONArray) lists[3].get(0);
+                                        List<JSONObject> list = new ArrayList();
+                                        JSONObject obj = null;
+                                        try {
+                                            obj = (JSONObject) arr.get(position);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        SecondFragment.fillFragment(obj );
                                     }
                                 });
                     }
@@ -127,9 +142,6 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
                 });
             }
         });
-
-
-
         return root;
     }
 
@@ -152,7 +164,11 @@ public void test() {
 
             "description":{
                 "text":
-                "Verksamhetsbeskrivning:\nRestaurang Thai Hoa är en central belägen restaurang som serverar vällagad och smakrik mat från Asiens populäraste kök. Det finns även flera svenska klassiska rätter att välja mellan. Restaurangen är öppen veckans alla dagar och erbjuder både lunchbuffé och à la carte samt möjligheten att ta med maten hem. \n\nVi söker kockar med erfarenhet av det asiatiska köket.\n\nArbetsuppgifter: \nTillaga asiatiska maträtter och bidra med inspiration. \n\nKrav: \nKunskaper iform av utbildning och arbetserfarenheter inom det asiatiska köket \n\nVälkommen med din ansökan!",
+                "Verksamhetsbeskrivning:\nRestaurang Thai Hoa är en central belägen restaurang som serverar vällagad och smakrik mat från Asiens populäraste kök.
+                Det finns även flera svenska klassiska rätter att välja mellan. Restaurangen är öppen veckans alla dagar och erbjuder både lunchbuffé och à
+                la carte samt möjligheten att ta med maten hem. \n\nVi söker kockar med erfarenhet av det asiatiska
+                köket.\n\nArbetsuppgifter: \nTillaga asiatiska maträtter och bidra med inspiration. \n\nKrav: \nKunskaper iform av utbildning
+                och arbetserfarenheter inom det asiatiska köket \n\nVälkommen med din ansökan!",
                     "company_information":null, "needs":null, "requirements":null, "conditions":null
             },
 
@@ -252,8 +268,8 @@ public void test() {
 
         switch (position) {
             case 1:
+                CustomToast.makeText(getActivity().getBaseContext(), "item one 1 case", Toast.LENGTH_LONG);
 
-                Resources res = getResources();
 
                 break;
             case 0:
