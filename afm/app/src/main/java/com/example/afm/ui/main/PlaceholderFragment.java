@@ -12,7 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
@@ -22,7 +21,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.afm.AfApiRequest;
-import com.example.afm.CustomToast;
 import com.example.afm.ListArrayAdapter;
 
 import com.example.afm.MainActivity;
@@ -102,10 +100,11 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
         search_btn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 vibe.vibrate(450);
-                final List[] lists = AfApiRequest.lists_3( search_field.getText().toString() );
+                final List[] lists = AfApiRequest.lists( search_field.getText().toString() );
 
                 final ListArrayAdapter adapter = new ListArrayAdapter(getContext(),
-                        android.R.layout.simple_list_item_1, lists[2], lists[0], lists[1]);
+                        android.R.layout.simple_list_item_1, lists[0], lists[1]);
+                adapter.setSideLists( lists[3], lists[4], lists[5], lists[6]  );
                 listview.setAdapter(adapter);
                 //listview.setVisibility(0);
                 listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -124,8 +123,7 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
                                         adapter.notifyDataSetChanged();
                                         view.setAlpha(1);
 
-
-                                        JSONArray arr = (JSONArray) lists[3].get(0);
+                                        JSONArray arr = (JSONArray) lists[2].get(0);
                                         List<JSONObject> list = new ArrayList();
                                         JSONObject obj = null;
                                         try {
@@ -133,7 +131,6 @@ public class PlaceholderFragment extends Fragment implements AdapterView.OnItemS
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
-
                                         SecondFragment.fillFragment(obj );
                                     }
                                 });
@@ -266,20 +263,6 @@ public void test() {
     @Override
     public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 
-        switch (position) {
-            case 1:
-                CustomToast.makeText(getActivity().getBaseContext(), "item one 1 case", Toast.LENGTH_LONG);
-
-
-                break;
-            case 0:
-                // Whatever you want to happen when the second item gets selected
-                break;
-            case 2:
-                // Whatever you want to happen when the thrid item gets selected
-                break;
-
-        }
     }
 
     @Override

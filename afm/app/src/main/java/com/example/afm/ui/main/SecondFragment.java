@@ -1,9 +1,19 @@
 package com.example.afm.ui.main;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import android.text.Html;
@@ -11,13 +21,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.afm.R;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,6 +50,7 @@ public class SecondFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static TextView ad_text, headline, deadline;
+    private static ImageView iconView;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -39,6 +58,7 @@ public class SecondFragment extends Fragment {
     private static String adString;
     private static String adHeadline;
     private static String adDeadline;
+    static Resources res;
 
 
     public SecondFragment() {
@@ -75,9 +95,11 @@ public class SecondFragment extends Fragment {
         // Inflate the layout for this fragment
 
         View root = inflater.inflate(R.layout.fragment_second, container, false);
+        res = getContext().getResources();
         ad_text = root.findViewById(R.id.ad_text);
         headline = root.findViewById(R.id.headline);
         deadline = root.findViewById(R.id.deadline);
+        iconView = root.findViewById(R.id.logo_icon);
         return root;
 
     }
@@ -102,13 +124,16 @@ public class SecondFragment extends Fragment {
 
     public static void fillFragment(JSONObject obj) {
         try {
+            fillImage(obj);
             headline.setText(obj.getString("headline"));
 
-            adDeadline = "Publicerad:&nbsp;&nbsp;&nbsp;&nbsp;" + obj.getString("publication_date") +
-                    "<br>Deadline:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + obj.getString("application_deadline");
+            adDeadline = "Public:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + obj.getString("publication_date") +
+                    "<br>Senast:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + obj.getString("application_deadline");
             deadline.setText(Html.fromHtml(adDeadline));
             adString = obj.getJSONObject("description").getString("text");
             ad_text.setText(adString);
+
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -219,5 +244,62 @@ public class SecondFragment extends Fragment {
 */
 
     }
+
+
+    public static void fillImage(JSONObject obj){
+        Draw draw = new Draw(obj);
+        Thread thread = new Thread(draw);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            thread.destroy();
+        }
+        iconView.setBackground( draw.getValue() );
+        thread.interrupt();
+    }
+
+
+
+    public static class Draw implements Runnable {
+        JSONObject jO;
+        String logo_url;
+        private volatile Drawable drawable;
+        Bitmap x;
+        HttpURLConnection connection;
+        InputStream input;
+
+        public Draw(JSONObject jO) {
+            this.jO = jO;
+        }
+
+        @Override
+        public void run() {
+            try {
+                try {
+                    logo_url = jO.getString("logo_url");
+                    connection = (HttpURLConnection) new URL(logo_url).openConnection();
+                    connection.connect();
+                    input = connection.getInputStream();
+                    x = BitmapFactory.decodeStream(input);
+                    drawable = new BitmapDrawable(Resources.getSystem(), x);
+                } catch (JSONException e) {
+                    drawable = ResourcesCompat.getDrawable(res, R.drawable.sweden, null);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if(x.getHeight() < 10)
+                drawable = ResourcesCompat.getDrawable(res, R.drawable.sweden, null);
+        }
+
+        public Drawable getValue() {
+            return drawable;
+        }
+    }
+
 
 }
